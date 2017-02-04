@@ -1,0 +1,27 @@
+{
+  "name": "ethereum-tutorials",
+  "version": "1.0.0",
+  "description": "A repository containing projects which I have completed whilst learning Ethereum's Solidity, Smart Contract, language",
+  "scripts": {
+    "test": "truffle test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stevejaxon/ethereum-tutorials.git"
+  },
+  "keywords": [
+    "ethereum",
+    "solidity",
+    "web3"
+  ],
+  "author": "SteveJaxon",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/stevejaxon/ethereum-tutorials/issues"
+  },
+  "homepage": "https://github.com/stevejaxon/ethereum-tutorials#readme",
+  "dependencies": {
+    "truffle-artifactor": "^2.0.1",
+    "web3": "^0.18.2"
+  }
+}

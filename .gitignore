@@ -1,2 +1,12 @@
+# Compiled binary addons (http://nodejs.org/api/addons.html)
+build/Release
+build
+
+# Dependency directories
+node_modules
+
+# Optional npm cache directory
+.npm
+
 # IntelliJ files
 .idea
