@@ -32,6 +32,13 @@ contract Token {
         }
     }
 
+    // Check allowance
+    modifier only_when_amount_is_allowed(address from, address destination, uint256 value) {
+        if (value <= allowance[from][destination]) {
+            _;
+        }
+    }
+
     /* Initializes contract with initial supply tokens to the creator of the contract */
     function Token(
         uint256 initialSupply,
@@ -71,10 +78,9 @@ contract Token {
     }
 
     /* A contract attempts to get the coins */
-    function transferFrom(address _from, address _to, uint256 _value) returns (bool success) {
-        if (balanceOf[_from] < _value) throw;                 // Check if the sender has enough
-        if (balanceOf[_to] + _value < balanceOf[_to]) throw;  // Check for overflows
-        if (_value > allowance[_from][msg.sender]) throw;   // Check allowance
+    function transferFrom(address _from, address _to, uint256 _value)
+            only_when_enough_tokens_are_available(_from, _value) only_when_amount_is_valid(_to, _value) only_when_amount_is_allowed(_from, msg.sender, _value)
+            returns (bool success) {
         balanceOf[_from] -= _value;                          // Subtract from the sender
         balanceOf[_to] += _value;                            // Add the same to the recipient
         allowance[_from][msg.sender] -= _value;
