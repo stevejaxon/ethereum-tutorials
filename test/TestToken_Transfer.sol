@@ -3,8 +3,11 @@ pragma solidity ^0.4.2;
 import "truffle/Assert.sol";
 import "truffle/DeployedAddresses.sol";
 import "../contracts/Token.sol";
+import "../contracts/ContractCallerProxy.sol";
 
-contract TestToken {
+// Note: Start TestRPC with the following arguments to prevent the Contract Owner's account from running out of Ether / the tests failing because of an Out of Gas exception:
+// testrpc --gasLimit 0x57E7C4 --gasPrice 2
+contract TestToken_Transfer {
 
     function testInitialBalanceUsingDeployedContract() {
         Token token = Token(DeployedAddresses.Token());
@@ -25,6 +28,8 @@ contract TestToken {
     event LogEvent(uint message);
 
     /******************** Transfer function tests ********************/
+
+    // It should be possible for the contract owner to transfer fewer tokens than are available in the contract owner's address to another account's address.
     function testTransferCorrectlySendsTokens() {
         // Setup
         uint fromAddressOriginalBalance = token.balanceOf(_thisAddress);
@@ -44,6 +49,7 @@ contract TestToken {
         Assert.equal(destinationAddressOriginalBalance + amountToSend, token.balanceOf(destinationAddress), "Destination address should have received the expected amount of tokens.");
     }
 
+    // It should not be possible for the contract owner to transfer more tokens than are available in the contract owner's address.
     function testTransferHandlesTooLargeRequest() {
         // Setup
         uint fromAddressOriginalBalance = token.balanceOf(_thisAddress);
@@ -61,6 +67,7 @@ contract TestToken {
         Assert.equal(0, token.balanceOf(destinationAddress), "Destination address should not have received any tokens.");
     }
 
+    // It should not be possible for the cotract owner to send a negative number of tokens.
     function testTransferHandlesNegativeAmountRequest() {
         // Setup
         uint fromAddressOriginalBalance = token.balanceOf(_thisAddress);
@@ -97,29 +104,4 @@ contract TestToken {
         Assert.equal(fromAddressOriginalBalance - amountToSend, token.balanceOf(_thisAddress), "Owner account should have been decremented by the expected amount");
         Assert.equal(destinationAddressOriginalBalance + amountToSend, token.balanceOf(destinationAddress), "Destination address should have received the expected amount of tokens.");
     }
-
-    /******************** transferFrom function tests ********************/
-    /*function testTransferFromCorrectlyAllowsDelegationOfTokenOwnership() {
-        // Setup
-        uint fromAddressOriginalBalance = token.balanceOf(_thisAddress);
-        address destinationAddress = 0x4;
-        uint destinationAddressOriginalBalance = token.balanceOf(destinationAddress);
-
-        Assert.equal(0, destinationAddressOriginalBalance, "Destination account should have started with 0 tokens.");
-
-        uint256 amountApproved = 10;
-
-        // Test
-        token.approve(destinationAddress, amountApproved);
-        token.transferFrom()
-
-        // Verify
-
-    }
-
-
-    contract ThrowProxy {
-
-    }*/
-
 }

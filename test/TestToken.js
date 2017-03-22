@@ -1,5 +1,7 @@
 var Token = artifacts.require("./Token.sol");
 
+// Note: Start TestRPC with the following arguments to prevent the Contract Owner's account from running out of Ether / the tests failing because of an Out of Gas exception:
+// testrpc --gasLimit 0x57E7C4 --gasPrice 2
 contract('Token', function(accounts) {
     it("should put 100 Tokens in the first account", function() {
         return Token.deployed().then(function(instance) {
