@@ -44,4 +44,13 @@ contract TestCrowdsale_Noname {
         //Assert.equal(initialTokenBalance + (amountOfEtherToSend/tokenPrice), crowdsale.balanceOf(_thisAddress), "Expected that the test contract address would have been awarded tokens for sending Ether to the crowdsale contract");
         //Assert.equal(initialAmountRaised + amountOfEtherToSend, crowdsale.amountRaised(), "Expected that the amount raised would have been increased by the amount sent to the crowdsale contract.");
     }
+
+    // nameReg.call("register", "MyName");
+    // nameReg.call(bytes4(keccak256("fun(uint256)")), a);
+    // foo.value()()
+    // msg.sender.call.value(this.balance)()
+    // callcode
+    // delegatecall
+    // sendTransaction
+    // sendTransactionRaw
 }
