@@ -22,5 +22,5 @@ contract Parent2 {
 
     function getBalance(address _address) public onlyOwner returns (uint256);
     // Does not compile
-    function setBalance(address _address, uint256 _amount) public onlyOwner;
+    // function setBalance(address _address, uint256 _amount) public onlyOwner;
 }
