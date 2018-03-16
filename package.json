@@ -22,6 +22,7 @@
   "homepage": "https://github.com/stevejaxon/ethereum-tutorials#readme",
   "dependencies": {
     "truffle-artifactor": "^2.0.1",
-    "web3": "^0.18.2"
+    "web3": "^0.18.2",
+    "zeppelin-solidity": "^1.7.0"
   }
 }
