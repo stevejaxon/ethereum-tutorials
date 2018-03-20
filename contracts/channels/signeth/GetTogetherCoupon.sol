@@ -2,14 +2,14 @@ pragma solidity ^0.4.0;
 
 import 'zeppelin-solidity/contracts/ownership/Ownable.sol';
 import 'zeppelin-solidity/contracts/math/SafeMath.sol';
-import './Coupon.sol';
+// import './Coupon.sol';
 
 /**
  * @title GetTogetherCoupon
  * @dev Implementation of the Coupon interface for use with the BlockTogether contract.
  */
 // TODO decide whether the contract can be paused
-contract GetTogetherCoupon is Ownable, Coupon {
+contract GetTogetherCoupon is Ownable{
 
     using SafeMath for uint256;
 
