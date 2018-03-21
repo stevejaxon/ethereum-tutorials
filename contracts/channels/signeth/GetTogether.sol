@@ -14,10 +14,9 @@ interface GetTogether {
     function numberOfAttendees() public view returns (uint);
     function maxCapacity() public view returns (uint);
     function canCancel(uint datetime) public view returns (bool);
-    function amountOfStakeReturnedOnCancellation(uint datetime) public view returns (uint);
+    function amountOfStakeReturnedOnCancellation(uint _datetime) public view returns (uint);
     function whenStakeCanBeReturned() public view returns (uint);
-    function amountOfStakeToBeReturned(address attendee, uint datetime) public view returns (uint);
-    function register() public payable;
-    function cancelRegistration() public;
+    function register(address _attendee) public payable;
+    function cancelRegistration(address _attendee) public;
     function cancelGetTogether() public;
 }
