@@ -1,4 +1,5 @@
 let GetTogetherCoupon = artifacts.require("./GetTogetherCoupon.sol");
+let MockGetTogether = artifacts.require("./MockGetTogether.sol");
 const assert = require('chai').assert;
 
 const noExceptionError = new Error("should not have reached this point");
@@ -7,9 +8,11 @@ contract('Coupon', async (accounts) => {
 
     let owner = accounts[0];
     let couponInstance;
+    let mockGetTogetherInstance;
 
     before('Create contract instances', async () => {
         couponInstance = await GetTogetherCoupon.new();
+        mockGetTogetherInstance = await MockGetTogether.new();
     });
 
     describe('owner tests', () => {
