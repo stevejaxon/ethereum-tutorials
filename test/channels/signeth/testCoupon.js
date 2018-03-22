@@ -191,8 +191,63 @@ contract('Coupon', async (accounts) => {
             assert.isTrue(remainingBalance.cmp(totalDeposited) === 0, 'Expected that no ether would have been withdrawn');
         });
 
-        it('should not be possible to withdraw more ether than is available (when some is staked)', async () => {
+        it('should not be possible to withdraw the ether when it is staked', async () => {
+            // Setup
+            let stakeRequired = await mockGetTogetherInstance.stakeRequired();
+            let depositor = accounts[4];
+            await couponInstance.deposit({from: depositor, value: stakeRequired});
+            let totalDeposited = await couponInstance.balanceOf.call(depositor);
 
+            // Test
+            try {
+                // Register and stake the deposit
+                await couponInstance.registerForGetTogether(mockGetTogetherInstance.address, {from: depositor});
+            } catch(e) {
+                throw e;
+            }
+
+            try {
+                // Try to withdraw the full balance when some of it is staked
+                await couponInstance.withdraw(totalDeposited, {from: depositor});
+                throw noExceptionError;
+            } catch(e) {
+                // Verify
+                assert.notEqual(e, noExceptionError, 'Expected that the error caught was not the noExceptionError');
+            }
+
+            // Verify
+            let remainingDeposited = await couponInstance.balanceOf.call(depositor);
+            assert.equal(remainingDeposited, 0, 'Expected that there would be no balance because it is staked');
         });
+
+        it('should not be possible to withdraw more ether than is available (when some is staked)', async () => {
+            // Setup
+            let stakeRequired = await mockGetTogetherInstance.stakeRequired();
+            let depositor = accounts[2];
+            await couponInstance.deposit({from: depositor, value: stakeRequired * 10});
+            let totalDeposited = await couponInstance.balanceOf.call(depositor);
+
+            // Test
+            try {
+                // Register and stake the deposit
+                await couponInstance.registerForGetTogether(mockGetTogetherInstance.address, {from: depositor});
+            } catch(e) {
+                throw e;
+            }
+
+            try {
+                // Try to withdraw the full balance when some of it is staked
+                await couponInstance.withdraw(totalDeposited, {from: depositor});
+                throw noExceptionError;
+            } catch(e) {
+                // Verify
+                assert.notEqual(e, noExceptionError, 'Expected that the error caught was not the noExceptionError');
+            }
+
+            // Verify
+            let remainingDeposited = await couponInstance.balanceOf.call(depositor);
+            let expectedRemainingDeposited = totalDeposited.sub(stakeRequired);
+            assert.isTrue(remainingDeposited.cmp(expectedRemainingDeposited) === 0, 'Expected that there would be no balance because it is staked');
+        })
     })
 });
