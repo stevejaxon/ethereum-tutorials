@@ -170,6 +170,29 @@ contract('Coupon', async (accounts) => {
             assert.isTrue(remainingDeposited.cmp(expectedRemaining) === 0, 'Expected that the user would have an amount of ether remaining in the contract');
         });
 
+        it('should be possible to withdraw the ether than is not staked', async () => {
+            // Setup
+            let stakeRequired = await mockGetTogetherInstance.stakeRequired();
+            let depositor = accounts[3];
+            await couponInstance.deposit({from: depositor, value: stakeRequired * 10});
+            let totalDeposited = await couponInstance.balanceOf.call(depositor);
+            let amountToWithdraw = totalDeposited.sub(stakeRequired);
+
+            // Test
+            try {
+                // Register and stake the deposit
+                await couponInstance.registerForGetTogether(mockGetTogetherInstance.address, {from: depositor});
+                // Withdraw the remaining amount deposited - that has not been staked
+                await couponInstance.withdraw(amountToWithdraw, {from: depositor});
+            } catch(e) {
+                throw e;
+            }
+
+            // Verify
+            let remainingDeposited = await couponInstance.balanceOf.call(depositor);
+            assert.equal(remainingDeposited, 0, 'Expected that amount deposited (and not staked) would be 0');
+        });
+
         it('should not be possible to withdraw more ether than is available (not staked)', async () => {
             // Setup
             let depositor = accounts[3];
@@ -248,6 +271,33 @@ contract('Coupon', async (accounts) => {
             let remainingDeposited = await couponInstance.balanceOf.call(depositor);
             let expectedRemainingDeposited = totalDeposited.sub(stakeRequired);
             assert.isTrue(remainingDeposited.cmp(expectedRemainingDeposited) === 0, 'Expected that there would be no balance because it is staked');
-        })
-    })
+        });
+    });
+
+    describe('Register tests', () => {
+        it('should not be possible for the same account to register twice', async () => {
+            // Setup
+            let stakeRequired = await mockGetTogetherInstance.stakeRequired();
+            let depositor = accounts[5];
+            await couponInstance.deposit({from: depositor, value: stakeRequired * 2});
+            let totalDeposited = await couponInstance.balanceOf.call(depositor);
+
+            // Test
+            try {
+                // Register and stake the deposit
+                await couponInstance.registerForGetTogether(mockGetTogetherInstance.address, {from: depositor});
+            } catch(e) {
+                throw e;
+            }
+
+            try {
+                // Try to register the second time
+                await couponInstance.registerForGetTogether(mockGetTogetherInstance.address, {from: depositor});
+                throw noExceptionError;
+            } catch(e) {
+                // Verify
+                assert.notEqual(e, noExceptionError, 'Expected that the error caught was not the noExceptionError');
+            }
+        });
+    });
 });
