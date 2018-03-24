@@ -14,5 +14,7 @@ contract Coupon {
     function balanceOf(address _account) public returns (uint);
     function deposit() public payable;
     function withdraw(uint _amount) public;
-    // function transferFrom(address _from, address _to, uint256 _value, address _approver, uint8 _v, bytes32 _r, bytes32 _s) public;
+
+    function registerForGetTogether(address _getTogether) public;
+    function redeemStake(address _getTogether, address _to, uint256 _value, uint8 _v, bytes32 _r, bytes32 _s) public;
 }

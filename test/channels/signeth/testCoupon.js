@@ -280,7 +280,6 @@ contract('Coupon', async (accounts) => {
             let stakeRequired = await mockGetTogetherInstance.stakeRequired();
             let depositor = accounts[5];
             await couponInstance.deposit({from: depositor, value: stakeRequired * 2});
-            let totalDeposited = await couponInstance.balanceOf.call(depositor);
 
             // Test
             try {
@@ -298,6 +297,12 @@ contract('Coupon', async (accounts) => {
                 // Verify
                 assert.notEqual(e, noExceptionError, 'Expected that the error caught was not the noExceptionError');
             }
+        });
+    });
+
+    describe('Redeem stake tests', () => {
+        it('', async () => {
+
         });
     });
 });
