@@ -353,7 +353,7 @@ contract('Coupon', async (accounts) => {
 
                 // Test
                 var msg = mockGetTogetherInstance.address
-                var h = web3.sha3(msg)
+                var h = web3.sha3(msg, {encoding: 'hex'})
                 var sig = web3.eth.sign(owner, h).slice(2)
                 var r = `0x${sig.slice(0, 64)}`
                 var s = `0x${sig.slice(64, 128)}`
@@ -362,11 +362,14 @@ contract('Coupon', async (accounts) => {
                 //let retrievedAddress = await couponInstance.recoverAddressOfSigner(mockGetTogetherInstance.address, depositor, stakeRequired, v, r, s);
                 let retrievedAddress = await couponInstance.recover.call(h, v, r, s);
 
-
                 // Verify
                 console.log(retrievedAddress);
                 assert.equal(retrievedAddress, owner)
 
+                retrievedAddress = await couponInstance.recoverAddressOfSigner.call(mockGetTogetherInstance.address, depositor, stakeRequired, v, r, s);
+                console.log(retrievedAddress);
+
+                console.log(h);
             } catch(e) {
                 throw e;
             }
