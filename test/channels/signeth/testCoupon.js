@@ -1,8 +1,11 @@
 let GetTogetherCoupon = artifacts.require("./GetTogetherCoupon.sol");
 let MockGetTogether = artifacts.require("./MockGetTogether.sol");
 const assert = require('chai').assert;
+const Promise = require("bluebird");
+const addEvmFunctions = require("../../utils/evmFunctions");
 
 const noExceptionError = new Error("should not have reached this point");
+const secondsInADay = 86400;
 
 contract('Coupon', async (accounts) => {
 
@@ -11,6 +14,11 @@ contract('Coupon', async (accounts) => {
     let mockGetTogetherInstance;
 
     before('Create contract instances', async () => {
+        // add the functions to modify time to web3
+        addEvmFunctions(web3);
+        Promise.promisifyAll(web3.eth, { suffix: "Promise" });
+        Promise.promisifyAll(web3.evm, { suffix: "Promise" });
+
         couponInstance = await GetTogetherCoupon.new();
         mockGetTogetherInstance = await MockGetTogether.new();
     });
@@ -298,11 +306,44 @@ contract('Coupon', async (accounts) => {
                 assert.notEqual(e, noExceptionError, 'Expected that the error caught was not the noExceptionError');
             }
         });
+
+        it('should not be possible to register once the event has started', async () => {
+            // Setup
+            // Take a snapshot of the EVM before the test
+            let snapshotId = await web3.evm.snapshotPromise();
+
+            let stakeRequired = await mockGetTogetherInstance.stakeRequired();
+            let depositor = accounts[1];
+            await couponInstance.deposit({from: depositor, value: stakeRequired});
+
+            // fast forward the evm to the time of the event ~1 day
+            await web3.evm.increaseTimePromise(secondsInADay);
+            // A new block has to be mined for 'now' to reflect the updated time on the evm
+            await web3.evm.minePromise();
+
+            // Test
+            try {
+                // Try to register and stake the deposit late
+                await couponInstance.registerForGetTogether(mockGetTogetherInstance.address, {from: depositor});
+                throw noExceptionError;
+            } catch(e) {
+                // Verify
+                assert.notEqual(e, noExceptionError, 'Expected that the error caught was not the noExceptionError');
+            }
+
+            // Revert the EVM back to the snapshotId
+            await web3.evm.revertPromise(snapshotId);
+        });
     });
 
     describe('Redeem stake tests', () => {
-        it('', async () => {
-
+        it('should be possible to \n' +
+            '\t1. Deposit some balance. \n' +
+            '\t2. Stake the required amount to attend a get-together. \n' +
+            '\t3. For the get-together organised to provide a signature to unlock the balance. \n' +
+            '\t4. For the attendee to un-stake the staked amount. \n', async () => {
+            // Setup
+            // let signature = await web3.eth.sign(owner, );
         });
     });
 });

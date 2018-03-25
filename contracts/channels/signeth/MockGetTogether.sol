@@ -4,6 +4,12 @@ import './GetTogether.sol';
 
 contract MockGetTogether is GetTogether {
 
+    uint internal deployedDate;
+
+    function MockGetTogether() {
+        deployedDate = now;
+    }
+
     function owner() public view returns (address) {
         return address(0x627306090abab3a6e1400e9345bc60c78a8bef57);
     }
@@ -13,7 +19,7 @@ contract MockGetTogether is GetTogether {
     }
 
     function getTogetherDate() public view returns (uint) {
-        return now + 1 days;
+        return deployedDate + 1 days;
     }
 
     function stakeRequired() public view returns (uint) {
@@ -43,7 +49,7 @@ contract MockGetTogether is GetTogether {
     }
 
     function whenStakeCanBeReturned() public view returns (uint) {
-        return now + 1 days;
+        return deployedDate;
     }
 
     function register(address _attendee) public payable {
