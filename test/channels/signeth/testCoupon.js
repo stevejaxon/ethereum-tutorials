@@ -13,12 +13,13 @@ contract('Coupon', async (accounts) => {
     let couponInstance;
     let mockGetTogetherInstance;
 
-    before('Create contract instances', async () => {
-        // add the functions to modify time to web3
+    before('// add the functions to modify time to web3', async () => {
         addEvmFunctions(web3);
         Promise.promisifyAll(web3.eth, { suffix: "Promise" });
         Promise.promisifyAll(web3.evm, { suffix: "Promise" });
+    });
 
+    beforeEach('Create contract instances', async () => {
         couponInstance = await GetTogetherCoupon.new();
         mockGetTogetherInstance = await MockGetTogether.new();
     });
@@ -342,8 +343,33 @@ contract('Coupon', async (accounts) => {
             '\t2. Stake the required amount to attend a get-together. \n' +
             '\t3. For the get-together organised to provide a signature to unlock the balance. \n' +
             '\t4. For the attendee to un-stake the staked amount. \n', async () => {
-            // Setup
-            // let signature = await web3.eth.sign(owner, );
+            try {
+                // Setup
+                let stakeRequired = await mockGetTogetherInstance.stakeRequired();
+                let depositor = accounts[1];
+                await couponInstance.deposit({from: depositor, value: stakeRequired});
+                let totalDeposited = await couponInstance.balanceOf.call(depositor);
+                await couponInstance.registerForGetTogether(mockGetTogetherInstance.address, {from: depositor});
+
+                // Test
+                var msg = mockGetTogetherInstance.address
+                var h = web3.sha3(msg)
+                var sig = web3.eth.sign(owner, h).slice(2)
+                var r = `0x${sig.slice(0, 64)}`
+                var s = `0x${sig.slice(64, 128)}`
+                var v = web3.toDecimal(sig.slice(128, 130)) + 27
+
+                //let retrievedAddress = await couponInstance.recoverAddressOfSigner(mockGetTogetherInstance.address, depositor, stakeRequired, v, r, s);
+                let retrievedAddress = await couponInstance.recover.call(h, v, r, s);
+
+
+                // Verify
+                console.log(retrievedAddress);
+                assert.equal(retrievedAddress, owner)
+
+            } catch(e) {
+                throw e;
+            }
         });
     });
 });
