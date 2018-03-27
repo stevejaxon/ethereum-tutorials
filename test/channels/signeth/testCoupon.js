@@ -357,7 +357,7 @@ contract('Coupon', async (accounts) => {
                 //var h1 = web3.sha3(msg, {encoding: 'hex'})
                 //console.log(h1);
                 // TODO move to the web3.js V1.x.x version of this
-                var h = "0x" + abi.soliditySHA3(["address", "address"], [mockGetTogetherInstance.address, depositor]).toString('hex');
+                var h = "0x" + abi.soliditySHA3(["address", "address", "uint"], [mockGetTogetherInstance.address, depositor, stakeRequired.toNumber()]).toString('hex');
                 console.log(h);
                 var sig = web3.eth.sign(owner, h).slice(2)
                 var r = `0x${sig.slice(0, 64)}`
