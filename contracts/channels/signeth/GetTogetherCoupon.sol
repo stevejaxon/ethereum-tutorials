@@ -73,7 +73,7 @@ contract GetTogetherCoupon is Ownable, Coupon {
     function recoverAddressOfSigner(address _getTogether, address _to, uint256 _value, uint8 _v, bytes32 _r, bytes32 _s) public pure returns (address) {
         require(_to != address(0));
         // bytes32 hash = keccak256(_getTogether, _to, _value);
-        bytes32 hash = keccak256(_getTogether);
+        bytes32 hash = keccak256(_getTogether, _to);
         return recover(hash, _v, _r, _s);
     }
 

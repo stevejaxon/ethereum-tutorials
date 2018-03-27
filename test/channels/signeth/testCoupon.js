@@ -2,6 +2,7 @@ let GetTogetherCoupon = artifacts.require("./GetTogetherCoupon.sol");
 let MockGetTogether = artifacts.require("./MockGetTogether.sol");
 const assert = require('chai').assert;
 const Promise = require("bluebird");
+const abi = require('ethereumjs-abi');
 const addEvmFunctions = require("../../utils/evmFunctions");
 
 const noExceptionError = new Error("should not have reached this point");
@@ -352,8 +353,12 @@ contract('Coupon', async (accounts) => {
                 await couponInstance.registerForGetTogether(mockGetTogetherInstance.address, {from: depositor});
 
                 // Test
-                var msg = mockGetTogetherInstance.address
-                var h = web3.sha3(msg, {encoding: 'hex'})
+                //var msg = mockGetTogetherInstance.address
+                //var h1 = web3.sha3(msg, {encoding: 'hex'})
+                //console.log(h1);
+                // TODO move to the web3.js V1.x.x version of this
+                var h = "0x" + abi.soliditySHA3(["address", "address"], [mockGetTogetherInstance.address, depositor]).toString('hex');
+                console.log(h);
                 var sig = web3.eth.sign(owner, h).slice(2)
                 var r = `0x${sig.slice(0, 64)}`
                 var s = `0x${sig.slice(64, 128)}`
@@ -368,6 +373,8 @@ contract('Coupon', async (accounts) => {
 
                 retrievedAddress = await couponInstance.recoverAddressOfSigner.call(mockGetTogetherInstance.address, depositor, stakeRequired, v, r, s);
                 console.log(retrievedAddress);
+
+                assert.equal(retrievedAddress, owner)
 
                 console.log(h);
             } catch(e) {
