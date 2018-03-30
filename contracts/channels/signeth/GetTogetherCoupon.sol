@@ -15,7 +15,7 @@ contract GetTogetherCoupon is Ownable, Coupon {
     using SafeMath for uint256;
 
     mapping (address => uint) internal balances;
-    mapping (address => mapping(address => uint)) stakes;
+    mapping (address => mapping(address => uint)) internal stakes;
 
     modifier hasLargeEnoughBalance(uint _amount) {
         require(balances[msg.sender] >= _amount);
@@ -68,7 +68,8 @@ contract GetTogetherCoupon is Ownable, Coupon {
         address recoveredSignerAddress = recoverAddressOfSigner(_getTogether, _to, _value, _v, _r, _s);
         require(recoveredSignerAddress == getTogether.owner());
         stakes[_getTogether][_to] = 0;
-        balances[_to] = _value;
+        balances[_to] = balances[_to].add(_value);
+        stakes[_getTogether][address(0)] = stakes[_getTogether][address(0)].sub(_value);
     }
 
     function recoverAddressOfSigner(address _getTogether, address _to, uint256 _value, uint8 _v, bytes32 _r, bytes32 _s) internal pure returns (address) {

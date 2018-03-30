@@ -367,7 +367,7 @@ contract('Coupon', async (accounts) => {
                 await web3.evm.increaseTimePromise(secondsInADay);
                 // A new block has to be mined for 'now' to reflect the updated time on the evm
                 await web3.evm.minePromise();
-                await couponInstance.redeemStake(mockGetTogetherInstance.address, depositor, stakeRequired, v, r, s);
+                await couponInstance.redeemStake(mockGetTogetherInstance.address, depositor, stakeRequired, v, r, s, {from: depositor});
 
                 // Verify
                 currentBalance = await couponInstance.balanceOf.call(depositor);
@@ -376,5 +376,59 @@ contract('Coupon', async (accounts) => {
                 throw e;
             }
         });
+
+        it('should be possible redeem a stake grater than what was deposited if one person forfeits theirs', async () => {
+            try {
+                // Setup
+                let stakeRequired = await mockGetTogetherInstance.stakeRequired();
+                let depositor1 = accounts[1];
+                let depositor2 = accounts[2];
+                // Both addresses stake different balances in the coupon contract
+                await couponInstance.deposit({from: depositor1, value: stakeRequired * 10});
+                await couponInstance.deposit({from: depositor2, value: stakeRequired * 5});
+                // Keep a record of the staked balances before the testing
+                let totalDeposited1 = await couponInstance.balanceOf.call(depositor1);
+                let totalDeposited2 = await couponInstance.balanceOf.call(depositor2);
+                // Register for an event
+                await couponInstance.registerForGetTogether(mockGetTogetherInstance.address, {from: depositor1});
+                await couponInstance.registerForGetTogether(mockGetTogetherInstance.address, {from: depositor2});
+                // Keep a record of the resulting staked balances after the addresses register for an event
+                let currentBalance1 = await couponInstance.balanceOf.call(depositor1);
+                let currentBalance2 = await couponInstance.balanceOf.call(depositor2);
+                assert.isTrue(currentBalance1.cmp(totalDeposited1.sub(stakeRequired)) === 0, 'The user 1s account should have been reduced by the staked amount.');
+                assert.isTrue(currentBalance2.cmp(totalDeposited2.sub(stakeRequired)) === 0, 'The user 2s account should have been reduced by the staked amount.');
+
+                // Test
+                let totalIncludingForeitedStake = stakeRequired * 2;
+                let h = "0x" + abi.soliditySHA3(["address", "address", "uint"], [mockGetTogetherInstance.address, depositor1, totalIncludingForeitedStake]).toString('hex');
+                let sig = web3.eth.sign(owner, h).slice(2);
+                let r = `0x${sig.slice(0, 64)}`;
+                let s = `0x${sig.slice(64, 128)}`;
+                let v = web3.toDecimal(sig.slice(128, 130)) + 27;
+
+                // Move the time on 1 day; to the point where the stake can be redeemed
+                await web3.evm.increaseTimePromise(secondsInADay);
+                // A new block has to be mined for 'now' to reflect the updated time on the evm
+                await web3.evm.minePromise();
+                await couponInstance.redeemStake(mockGetTogetherInstance.address, depositor1, totalIncludingForeitedStake, v, r, s, {from: depositor1});
+
+                // Verify
+                currentBalance1 = await couponInstance.balanceOf.call(depositor1);
+                currentBalance2 = await couponInstance.balanceOf.call(depositor2);
+                assert.isTrue(currentBalance1.cmp(totalDeposited1.add(stakeRequired)) === 0, 'The users stake should have been returned + the amount forfeited');
+                assert.isTrue(currentBalance2.cmp(totalDeposited2.sub(stakeRequired)) === 0, 'The users stake should not have been returned');
+
+                // TODO check the other internal mapping is 0
+            } catch(e) {
+                throw e;
+            }
+        })
+
+        // it should not be possible for someone to redeem their stake twice
+        // it should not be possible for the owner of the coupon to sign txs for more than has been staked to an event
+        // it should not be possible for someone other than the owner to be able to sign a valid tx
+        // it should not be possible for a valid signature to be redeemed early
+
+        // Even if the owner signs a tx afterwards to release a forfeited stake
     });
 });
