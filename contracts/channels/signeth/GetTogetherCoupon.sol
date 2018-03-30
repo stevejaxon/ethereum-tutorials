@@ -63,20 +63,21 @@ contract GetTogetherCoupon is Ownable, Coupon {
         require(stakes[_getTogether][_to] != 0);
         require(_value > 0);
         GetTogether getTogether = GetTogether(_getTogether);
-        require(getTogether.whenStakeCanBeReturned() <= now);
+        require(now >= getTogether.whenStakeCanBeReturned());
+        require(getTogether.owner() != address(0));
         address recoveredSignerAddress = recoverAddressOfSigner(_getTogether, _to, _value, _v, _r, _s);
         require(recoveredSignerAddress == getTogether.owner());
         stakes[_getTogether][_to] = 0;
         balances[_to] = _value;
     }
 
-    function recoverAddressOfSigner(address _getTogether, address _to, uint256 _value, uint8 _v, bytes32 _r, bytes32 _s) public pure returns (address) {
+    function recoverAddressOfSigner(address _getTogether, address _to, uint256 _value, uint8 _v, bytes32 _r, bytes32 _s) internal pure returns (address) {
         require(_to != address(0));
         bytes32 hash = keccak256(_getTogether, _to, _value);
         return recover(hash, _v, _r, _s);
     }
 
-    function recover(bytes32 h, uint8 v, bytes32 r, bytes32 s) public pure returns (address) {
+    function recover(bytes32 h, uint8 v, bytes32 r, bytes32 s) internal pure returns (address) {
         bytes memory prefix = "\x19Ethereum Signed Message:\n32";
         bytes32 prefixedHash = keccak256(prefix, h);
         return ecrecover(prefixedHash, v, r, s);

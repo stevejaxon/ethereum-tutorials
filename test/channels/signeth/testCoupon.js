@@ -352,31 +352,26 @@ contract('Coupon', async (accounts) => {
                 let totalDeposited = await couponInstance.balanceOf.call(depositor);
                 await couponInstance.registerForGetTogether(mockGetTogetherInstance.address, {from: depositor});
 
-                // Test
-                //var msg = mockGetTogetherInstance.address
-                //var h1 = web3.sha3(msg, {encoding: 'hex'})
-                //console.log(h1);
-                // TODO move to the web3.js V1.x.x version of this
-                var h = "0x" + abi.soliditySHA3(["address", "address", "uint"], [mockGetTogetherInstance.address, depositor, stakeRequired.toNumber()]).toString('hex');
-                console.log(h);
-                var sig = web3.eth.sign(owner, h).slice(2)
-                var r = `0x${sig.slice(0, 64)}`
-                var s = `0x${sig.slice(64, 128)}`
-                var v = web3.toDecimal(sig.slice(128, 130)) + 27
+                let currentBalance = await couponInstance.balanceOf.call(depositor);
+                assert.isTrue(currentBalance.cmp(totalDeposited.sub(stakeRequired)) === 0, 'The users account should have been reduced by the staked amount.');
 
-                //let retrievedAddress = await couponInstance.recoverAddressOfSigner(mockGetTogetherInstance.address, depositor, stakeRequired, v, r, s);
-                let retrievedAddress = await couponInstance.recover.call(h, v, r, s);
+                // Test
+                // TODO move to the web3.js V1.x.x version of this
+                let h = "0x" + abi.soliditySHA3(["address", "address", "uint"], [mockGetTogetherInstance.address, depositor, stakeRequired.toNumber()]).toString('hex');
+                let sig = web3.eth.sign(owner, h).slice(2);
+                let r = `0x${sig.slice(0, 64)}`;
+                let s = `0x${sig.slice(64, 128)}`;
+                let v = web3.toDecimal(sig.slice(128, 130)) + 27;
+
+                // Move the time on 1 day; to the point where the stake can be redeemed
+                await web3.evm.increaseTimePromise(secondsInADay);
+                // A new block has to be mined for 'now' to reflect the updated time on the evm
+                await web3.evm.minePromise();
+                await couponInstance.redeemStake(mockGetTogetherInstance.address, depositor, stakeRequired, v, r, s);
 
                 // Verify
-                console.log(retrievedAddress);
-                assert.equal(retrievedAddress, owner)
-
-                retrievedAddress = await couponInstance.recoverAddressOfSigner.call(mockGetTogetherInstance.address, depositor, stakeRequired, v, r, s);
-                console.log(retrievedAddress);
-
-                assert.equal(retrievedAddress, owner)
-
-                console.log(h);
+                currentBalance = await couponInstance.balanceOf.call(depositor);
+                assert.isTrue(currentBalance.cmp(totalDeposited) === 0, 'The users stake should have been returned.');
             } catch(e) {
                 throw e;
             }
