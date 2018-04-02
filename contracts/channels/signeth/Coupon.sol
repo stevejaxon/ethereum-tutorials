@@ -11,7 +11,9 @@ contract Coupon {
     event Deposited(address _account, uint _amount);
     event Withdrawn(address _account, uint _amount);
 
-    function balanceOf(address _account) public returns (uint);
+    function balanceOf(address _account) public view returns (uint);
+    function totalStaked(address _getTogether) public view returns (uint);
+    function stakedAmount(address _getTogether, address _account) public view returns (uint);
     function deposit() public payable;
     function withdraw(uint _amount) public;
 

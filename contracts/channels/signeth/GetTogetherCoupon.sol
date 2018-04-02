@@ -34,8 +34,16 @@ contract GetTogetherCoupon is Ownable, Coupon {
         Withdrawn(msg.sender, _amount);
     }
 
-    function balanceOf(address _account) public returns (uint) {
+    function balanceOf(address _account) public view returns (uint) {
         return balances[_account];
+    }
+
+    function totalStaked(address _getTogether) public view returns (uint) {
+        return stakes[_getTogether][address(0)];
+    }
+
+    function stakedAmount(address _getTogether, address _account) public view returns (uint) {
+        return stakes[_getTogether][_account];
     }
 
     function registerForGetTogether(address _getTogether) public {

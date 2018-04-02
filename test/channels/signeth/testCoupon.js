@@ -372,6 +372,11 @@ contract('Coupon', async (accounts) => {
                 // Verify
                 currentBalance = await couponInstance.balanceOf.call(depositor);
                 assert.isTrue(currentBalance.cmp(totalDeposited) === 0, 'The users stake should have been returned.');
+                // Check all of the balances are correctly set
+                let remainingStaked1 = await couponInstance.stakedAmount(mockGetTogetherInstance.address, depositor);
+                assert.isTrue(remainingStaked1.cmp(0) === 0);
+                let remainigStakeInEvent = await couponInstance.totalStaked(mockGetTogetherInstance.address);
+                assert.isTrue(remainigStakeInEvent.cmp(0) === 0);
             } catch(e) {
                 throw e;
             }
@@ -417,8 +422,13 @@ contract('Coupon', async (accounts) => {
                 currentBalance2 = await couponInstance.balanceOf.call(depositor2);
                 assert.isTrue(currentBalance1.cmp(totalDeposited1.add(stakeRequired)) === 0, 'The users stake should have been returned + the amount forfeited');
                 assert.isTrue(currentBalance2.cmp(totalDeposited2.sub(stakeRequired)) === 0, 'The users stake should not have been returned');
-
-                // TODO check the other internal mapping is 0
+                // Check all of the balances are correctly set
+                let remainingStaked1 = await couponInstance.stakedAmount(mockGetTogetherInstance.address, depositor1);
+                assert.isTrue(remainingStaked1.cmp(0) === 0);
+                let remainingStaked2 = await couponInstance.stakedAmount(mockGetTogetherInstance.address, depositor2);
+                assert.isTrue(remainingStaked2.cmp(stakeRequired) === 0);
+                let remainigStakeInEvent = await couponInstance.totalStaked(mockGetTogetherInstance.address);
+                assert.isTrue(remainigStakeInEvent.cmp(0) === 0);
             } catch(e) {
                 throw e;
             }
